@@ -22,3 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Backend ML models
+NutriTrack-Backend/models/
+*.pt
+*.safetensors
+
+# Large datasets
+NutriTrack-Backend/data/
+*.csv
+
+# Python
+__pycache__/
