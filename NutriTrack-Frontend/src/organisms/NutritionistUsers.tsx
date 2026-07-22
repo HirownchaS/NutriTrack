@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../atoms/Card';
-import { getAssignedUsers, handleUserRequest } from '../services/api';
+import { getAssignedUsers, handleUserRequest } from '../services/nutritionist';
 import { FiUserCheck, FiUserX, FiTarget, FiArrowRight, FiMail, FiClock, FiInbox, FiMessageCircle } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
-
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase/config';
 
 
 interface UserRequest {
@@ -43,9 +44,6 @@ const NutritionistUsers: React.FC = () => {
         const setupRealtimeSync = async () => {
             if (!user) return;
             try {
-                const { collection, query, where, onSnapshot } = await import('firebase/firestore');
-                const { db } = await import('../firebase/config');
-
                 // 1. Listen to nutritionist requests (handles pending requests using duplicated user data)
                 const qRequests = query(
                     collection(db, "nutritionist_requests"),

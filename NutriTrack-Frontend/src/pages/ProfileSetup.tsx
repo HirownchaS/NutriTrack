@@ -63,7 +63,7 @@ const ProfileSetup: React.FC = () => {
             const weight = parseFloat(form.weight);
             const height = parseFloat(form.height);
             const age = parseInt(form.age);
-            
+
             let bmr = (10 * weight) + (6.25 * height) - (5 * age);
             bmr = form.gender === 'male' ? bmr + 5 : bmr - 161;
 
@@ -81,21 +81,21 @@ const ProfileSetup: React.FC = () => {
             let dailyCalorieGoal = tdee;
             if (form.fitnessGoal === 'lose weight') dailyCalorieGoal -= 500;
             else if (form.fitnessGoal === 'build muscle') dailyCalorieGoal += 500;
-            
+
             const finalGoal = Math.round(dailyCalorieGoal);
 
-            // Save profile data via Firebase
             if (user) {
-                await saveProfile(user.uid, {
+                const profileData: Record<string, any> = {
                     ...form,
                     dailyCalorieGoal: finalGoal,
                     createdAt: new Date()
-                } as unknown as Record<string, unknown>);
+                };
+                await saveProfile(user.uid, profileData);
             }
 
             // Mark profile as complete in context + localStorage
             completeProfile();
-            
+
             // Log out the user so they can log back in at the Login page
             await logout();
 
@@ -181,12 +181,12 @@ const ProfileSetup: React.FC = () => {
                                 name="gender"
                                 value={form.gender}
                                 onChange={handleSelectChange}
-                                className="px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white"
+                                className="px-4 py-2 pr-10 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white appearance-none -webkit-appearance-none -moz-appearance-none custom-select"
                                 aria-label="Select your gender"
                             >
                                 <option value="male">Male</option>
                                 <option value="female">Female</option>
-                             
+
                             </select>
                         </div>
                     </div>
@@ -223,7 +223,7 @@ const ProfileSetup: React.FC = () => {
                             name="healthCondition"
                             value={form.healthCondition}
                             onChange={handleSelectChange}
-                            className="px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white"
+                            className="px-4 py-2 pr-10 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white appearance-none -webkit-appearance-none -moz-appearance-none custom-select"
                             aria-label="Select your health condition"
                         >
                             <option value="none">None</option>
@@ -231,7 +231,7 @@ const ProfileSetup: React.FC = () => {
                             <option value="hypertension">Hypertension</option>
                             <option value="cholesterol">High Cholesterol</option>
                             <option value="thyroid">Thyroid Disorder</option>
-                    
+
                         </select>
                     </div>
 
@@ -246,11 +246,11 @@ const ProfileSetup: React.FC = () => {
                                 name="fitnessGoal"
                                 value={form.fitnessGoal}
                                 onChange={handleSelectChange}
-                                className="px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white"
+                                className="px-4 py-2 pr-10 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white appearance-none -webkit-appearance-none -moz-appearance-none custom-select"
                                 aria-label="Select your fitness goal"
                             >
                                 <option value="lose weight">Lose Weight</option>
-                                <option value="maintain">Maintain Weight</option>
+                                <option value="maintain weight">Maintain Weight</option>
                                 <option value="build muscle">Build Muscle</option>
                                 <option value="general health">General Health</option>
                             </select>
@@ -265,7 +265,7 @@ const ProfileSetup: React.FC = () => {
                                 name="activityLevel"
                                 value={form.activityLevel}
                                 onChange={handleSelectChange}
-                                className="px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white"
+                                className="px-4 py-2 pr-10 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white appearance-none -webkit-appearance-none -moz-appearance-none custom-select"
                                 aria-label="Select your activity level"
                             >
                                 <option value="sedentary">Sedentary</option>

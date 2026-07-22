@@ -365,7 +365,7 @@ const AdminUserManagement: React.FC = () => {
                             <select
                                 value={roleFilter}
                                 onChange={e => setRoleFilter(e.target.value)}
-                                className="pl-8 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 appearance-none cursor-pointer"
+                                className="pl-8 pr-10 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-500 appearance-none -webkit-appearance-none -moz-appearance-none custom-select cursor-pointer"
                             >
                                 <option value="all">All Roles</option>
                                 <option value="user">Users</option>
@@ -670,7 +670,7 @@ const AdminUserManagement: React.FC = () => {
                             <select
                                 value={editRole}
                                 onChange={e => setEditRole(e.target.value)}
-                                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                className="w-full px-4 py-2.5 pr-10 border border-slate-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all appearance-none -webkit-appearance-none -moz-appearance-none custom-select"
                             >
                                 {ROLES.map(r => (
                                     <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
@@ -686,7 +686,7 @@ const AdminUserManagement: React.FC = () => {
                             <select
                                 value={editNutritionistId}
                                 onChange={e => setEditNutritionistId(e.target.value)}
-                                className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                                className="w-full px-4 py-2.5 pr-10 border border-slate-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all appearance-none -webkit-appearance-none -moz-appearance-none custom-select"
                             >
                                 <option value="">— Not Assigned —</option>
                                 {nutritionists.map(n => (

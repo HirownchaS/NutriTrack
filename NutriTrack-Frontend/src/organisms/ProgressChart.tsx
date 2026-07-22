@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../atoms/Card';
-import { getProgress } from '../services/api';
+import { getProgress } from '../services/analytics';
 
 // Chart.js imports
 import {
@@ -137,7 +137,7 @@ const ProgressChart: React.FC = () => {
                     <select
                         value={period}
                         onChange={(e) => setPeriod(e.target.value as Period)}
-                        className="text-xs font-bold text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                        className="text-xs font-bold text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 pr-10 appearance-none -webkit-appearance-none -moz-appearance-none custom-select focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
                     >
                         <option value="daily">Past 7 Days</option>
                         <option value="weekly">Past 4 Weeks</option>

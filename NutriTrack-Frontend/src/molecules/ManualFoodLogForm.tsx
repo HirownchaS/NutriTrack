@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import Card from '../atoms/Card';
 import Button from '../atoms/Button';
-import { addManualFoodLog } from '../services/api';
+import { useNotification } from '../context/NotificationContext';
+import { addManualFoodLog } from '../services/foodLogs';
 import { FiPlusCircle, FiActivity } from 'react-icons/fi';
 
 interface ManualFoodLogFormProps {
@@ -60,6 +61,7 @@ const calculateNutrition = (foodName: string, portionType: string) => {
 const ManualFoodLogForm: React.FC<ManualFoodLogFormProps> = ({ onSuccess }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { success, error } = useNotification();
     const [formData, setFormData] = useState({
         foodName: '',
         mealType: 'Lunch',
@@ -102,10 +104,11 @@ const ManualFoodLogForm: React.FC<ManualFoodLogFormProps> = ({ onSuccess }) => {
                 portionType: 'Medium'
             });
             
+            success('Meal saved successfully!');
             if (onSuccess) onSuccess();
         } catch (err) {
             console.error("Failed to add manual log", err);
-            alert("Failed to save meal. Please try again.");
+            error('Failed to save meal. Please try again.');
         } finally {
             setIsSubmitting(false);
         }
@@ -187,7 +190,7 @@ const ManualFoodLogForm: React.FC<ManualFoodLogFormProps> = ({ onSuccess }) => {
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Meal Type</label>
                         <select 
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none font-bold text-slate-700 appearance-none bg-white"
+                            className="w-full px-4 py-3 pr-10 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none font-bold text-slate-700 appearance-none -webkit-appearance-none -moz-appearance-none custom-select bg-white"
                             value={formData.mealType}
                             onChange={e => setFormData({...formData, mealType: e.target.value})}
                         >
@@ -200,7 +203,7 @@ const ManualFoodLogForm: React.FC<ManualFoodLogFormProps> = ({ onSuccess }) => {
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Portion Type</label>
                         <select 
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none font-bold text-slate-700 appearance-none bg-white"
+                            className="w-full px-4 py-3 pr-10 rounded-xl border border-slate-200 focus:border-emerald-500 outline-none font-bold text-slate-700 appearance-none -webkit-appearance-none -moz-appearance-none custom-select bg-white"
                             value={formData.portionType}
                             onChange={e => setFormData({...formData, portionType: e.target.value})}
                         >

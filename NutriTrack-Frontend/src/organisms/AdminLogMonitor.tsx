@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Card from '../atoms/Card';
 import Button from '../atoms/Button';
-import { getAllUsers, getUserFoodLogs } from '../services/api';
+import { getAllUsers, getUserFoodLogs } from '../services/admin';
 import { getUserDetections } from '../services/firestore';
 import { FiDownloadCloud, FiTrendingUp, FiClock, FiArrowRight, FiUsers, FiPieChart } from 'react-icons/fi';
 import {
@@ -90,10 +90,14 @@ const AdminLogMonitor: React.FC = () => {
             try {
                 const res = await getAllUsers();
                 const filtered = res.data
-                    .filter((user: any) => user.role !== 'admin')
+                    .filter((user: any) => user.role === 'user')
                     .sort((a: any, b: any) => (a.name || '').localeCompare(b.name || ''));
                 setUsers(filtered);
-                if (filtered.length > 0) setSelectedUserId(filtered[0].id);
+                if (filtered.length > 0) {
+                    setSelectedUserId(filtered[0].id);
+                } else {
+                    setSelectedUserId('');
+                }
             } catch (err) {
                 console.error('Failed to load users', err);
                 setError('Unable to load users.');
@@ -346,13 +350,26 @@ const AdminLogMonitor: React.FC = () => {
                         <select
                             value={selectedUserId}
                             onChange={(e) => setSelectedUserId(e.target.value)}
-                            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-10 text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 appearance-none -webkit-appearance-none -moz-appearance-none custom-select"
+                            disabled={users.length === 0}
                         >
-                            <option value="" disabled>Select user</option>
-                            {users.map((user) => (
-                                <option key={user.id} value={user.id}>{user.name || user.email || 'Unnamed user'}</option>
-                            ))}
+                            {users.length === 0 ? (
+                                <option value="">No users available</option>
+                            ) : (
+                                <>
+                                    <option value="" disabled>Select user</option>
+                                    {users.map((user) => (
+                                        <option key={user.id} value={user.id}>{user.name || user.email || 'Unnamed user'}</option>
+                                    ))}
+                                </>
+                            )}
                         </select>
+
+                        {users.length === 0 && (
+                            <div className="p-4 rounded-3xl bg-amber-50 border border-amber-100 text-amber-700 text-sm font-medium italic">
+                                No users available
+                            </div>
+                        )}
 
                         {selectedUser && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -490,7 +507,7 @@ const AdminLogMonitor: React.FC = () => {
                 )}
             </Card>
 
-            <div className="grid gap-6 lg:grid-cols-2">
+            {/* <div className="grid gap-6 lg:grid-cols-2">
                 <Card className="p-6">
                     <div className="flex items-center justify-between mb-4 gap-3">
                         <div>
@@ -541,7 +558,7 @@ const AdminLogMonitor: React.FC = () => {
                         ))}
                     </div>
                 </Card>
-            )}
+            )} */}
         </div>
     );
 };

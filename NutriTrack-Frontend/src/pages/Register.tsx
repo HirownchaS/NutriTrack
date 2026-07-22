@@ -125,6 +125,7 @@ const Register: React.FC = () => {
                         value={form.password}
                         onChange={handleChange}
                         required
+                        showPasswordToggle
                     />
                     <Input
                         id="confirmPassword"
@@ -134,6 +135,7 @@ const Register: React.FC = () => {
                         value={form.confirmPassword}
                         onChange={handleChange}
                         required
+                        showPasswordToggle
                     />
 
                     <Button

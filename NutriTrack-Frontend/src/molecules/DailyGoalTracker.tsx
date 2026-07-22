@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../atoms/Card';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import { db } from '../firebase/config';
-import { calculateDynamicCalories } from '../services/api';
-
+import { calculateDynamicCalories, getDailyProgress } from '../services/tracking';
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
 
 
 const DailyGoalTracker: React.FC = () => {
     const { user } = useAuth();
+    const { warning, error, success } = useNotification();
     const [consumed, setConsumed] = useState<number>(0);
     const [goal, setGoal] = useState<number>(2000);
     const [loading, setLoading] = useState(true);
-    
+
     // UI states for editing
     const [isEditing, setIsEditing] = useState(false);
     const [tempGoal, setTempGoal] = useState<number>(2000);
@@ -21,11 +23,10 @@ const DailyGoalTracker: React.FC = () => {
     useEffect(() => {
         if (!user) { setLoading(false); return; }
 
-        let unsubscribe = () => {};
+        let unsubscribe = () => { };
 
         const loadData = async () => {
             try {
-                const { getDailyProgress } = await import('../services/api');
                 const progress = await getDailyProgress(user.uid);
                 setConsumed(Math.round(progress.totalCalories));
             } catch (err) {
@@ -33,7 +34,6 @@ const DailyGoalTracker: React.FC = () => {
             }
 
             try {
-                const { doc, onSnapshot } = await import('firebase/firestore');
                 // Real-time listener for the user's goal
                 unsubscribe = onSnapshot(doc(db, 'users', user.uid), (docSnap) => {
                     if (docSnap.exists()) {
@@ -68,23 +68,24 @@ const DailyGoalTracker: React.FC = () => {
     const handleSaveGoal = async () => {
         if (!user) return;
         const val = Math.round(tempGoal);
-        
+
         // Basic validation
         if (val < 1000 || val > 10000) {
-            alert("Please enter a realistic calorie goal (1000 - 10000 kcal).");
+            warning("Please enter a realistic calorie goal (1000 - 10000 kcal).");
             return;
         }
-        
+
         setIsSaving(true);
         try {
-            const { doc, updateDoc } = await import('firebase/firestore');
-            await updateDoc(doc(db, 'users', user.uid), {
+            const userDocRef = doc(db, 'users', user.uid);
+            await updateDoc(userDocRef, {
                 dailyCalorieGoal: val
             });
             setIsEditing(false);
+            success("Daily calorie goal updated successfully.");
         } catch (err) {
             console.error("Failed to update goal:", err);
-            alert("Failed to save goal. Please ensure you are connected.");
+            error("Failed to save goal. Please ensure you are connected.");
         } finally {
             setIsSaving(false);
         }
@@ -103,8 +104,8 @@ const DailyGoalTracker: React.FC = () => {
                     <div className="flex items-center gap-2 mb-0.5">
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Daily Calorie Goal</p>
                         {!isEditing && (
-                            <button 
-                                onClick={() => setIsEditing(true)} 
+                            <button
+                                onClick={() => setIsEditing(true)}
                                 className="text-slate-300 hover:text-emerald-500 transition-colors p-0.5 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
                                 title="Edit Goal"
                             >
@@ -114,11 +115,11 @@ const DailyGoalTracker: React.FC = () => {
                             </button>
                         )}
                     </div>
-                    
+
                     {isEditing ? (
                         <div className="flex items-center gap-2 mt-1">
-                            <input 
-                                type="number" 
+                            <input
+                                type="number"
                                 className="w-20 px-2 py-1 text-sm border border-slate-200 rounded-lg font-black text-slate-800 focus:outline-none focus:border-emerald-500 transition-colors"
                                 value={tempGoal}
                                 onChange={(e) => setTempGoal(Number(e.target.value))}
@@ -126,14 +127,14 @@ const DailyGoalTracker: React.FC = () => {
                                 min="1000"
                                 max="10000"
                             />
-                            <button 
+                            <button
                                 onClick={handleSaveGoal}
                                 disabled={isSaving}
                                 className="px-3 py-1 bg-emerald-500 text-white rounded-lg text-xs font-bold hover:bg-emerald-600 transition-colors disabled:opacity-50"
                             >
                                 {isSaving ? '...' : 'Save'}
                             </button>
-                            <button 
+                            <button
                                 onClick={() => { setIsEditing(false); setTempGoal(goal); }}
                                 disabled={isSaving}
                                 className="px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold hover:bg-slate-200 transition-colors disabled:opacity-50"
@@ -148,9 +149,8 @@ const DailyGoalTracker: React.FC = () => {
                         </div>
                     )}
                 </div>
-                <div className={`flex flex-col items-end px-3 py-2 rounded-xl text-xs font-black ${
-                    isOver ? 'bg-red-50 text-red-600' : pct >= 80 ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'
-                }`}>
+                <div className={`flex flex-col items-end px-3 py-2 rounded-xl text-xs font-black ${isOver ? 'bg-red-50 text-red-600' : pct >= 80 ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-emerald-600'
+                    }`}>
                     <span className="text-lg">{isOver ? '⚠️' : pct >= 80 ? '🔥' : '✅'}</span>
                     <span>{isOver ? 'Over goal' : `${remaining} kcal left`}</span>
                 </div>
@@ -165,8 +165,8 @@ const DailyGoalTracker: React.FC = () => {
                         background: isOver
                             ? 'linear-gradient(90deg, #ef4444, #dc2626)'
                             : pct >= 80
-                            ? 'linear-gradient(90deg, #f59e0b, #d97706)'
-                            : 'linear-gradient(90deg, #10b981, #059669)',
+                                ? 'linear-gradient(90deg, #f59e0b, #d97706)'
+                                : 'linear-gradient(90deg, #10b981, #059669)',
                     }}
                 />
             </div>

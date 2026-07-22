@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../atoms/Card';
 import { useAuth } from '../context/AuthContext';
+import { collection, query, where, getDocs, getDoc, doc, limit, orderBy, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase/config';
 import {
     FiUsers, FiInbox, FiFileText, FiActivity,
-    FiArrowRight, FiCheckSquare, FiMessageSquare, FiFilePlus
+    FiArrowRight, FiCheckSquare, FiMessageSquare, FiFilePlus,
+    FiPieChart, FiBarChart2
 } from 'react-icons/fi';
-
 
 interface DashboardStats {
     assignedUsers: number;
@@ -24,10 +26,149 @@ interface ActivityItem {
     icon: string;
 }
 
-interface DashboardData {
-    stats: DashboardStats;
-    recentActivity: ActivityItem[];
+interface ApprovalPoint {
+    label: string;
+    value: number;
+    color: string;
 }
+
+interface DailyCaloriesPoint {
+    label: string;
+    value: number;
+}
+
+const buildApprovalChartData = (logs: Array<{ status?: string }>): ApprovalPoint[] => {
+    const counts = { Approved: 0, Rejected: 0, Pending: 0 };
+
+    logs.forEach((log) => {
+        const normalizedStatus = String(log.status || 'pending').toLowerCase();
+        if (normalizedStatus === 'approved') counts.Approved += 1;
+        else if (normalizedStatus === 'rejected') counts.Rejected += 1;
+        else counts.Pending += 1;
+    });
+
+    return [
+        { label: 'Approved', value: counts.Approved, color: '#10b981' },
+        { label: 'Rejected', value: counts.Rejected, color: '#ef4444' },
+        { label: 'Pending', value: counts.Pending, color: '#f59e0b' },
+    ];
+};
+
+const buildAverageCaloriesData = (logs: Array<{ userId?: string; calories?: number; createdAt?: { toDate?: () => Date } }>, assignedUserCount: number): DailyCaloriesPoint[] => {
+    const last7Days = Array.from({ length: 7 }, (_, index) => {
+        const day = new Date();
+        day.setDate(day.getDate() - (6 - index));
+        return {
+            key: `${day.getFullYear()}-${day.getMonth() + 1}-${day.getDate()}`,
+            label: day.toLocaleDateString('en-US', { weekday: 'short' }),
+            totalCalories: 0,
+        };
+    });
+
+    logs.forEach((log) => {
+        const createdAt = log.createdAt?.toDate?.();
+        if (!createdAt) return;
+
+        const key = `${createdAt.getFullYear()}-${createdAt.getMonth() + 1}-${createdAt.getDate()}`;
+        const dayBucket = last7Days.find((entry) => entry.key === key);
+        if (dayBucket) {
+            dayBucket.totalCalories += Number(log.calories || 0);
+        }
+    });
+
+    return last7Days.map((item) => ({
+        label: item.label,
+        value: assignedUserCount > 0 ? Math.round(item.totalCalories / assignedUserCount) : 0,
+    }));
+};
+
+const ApprovalChart: React.FC<{ data: ApprovalPoint[] }> = ({ data }) => {
+    const total = data.reduce((sum, item) => sum + item.value, 0);
+
+    if (!data.length || total === 0) {
+        return <p className="text-sm text-slate-500">No data available</p>;
+    }
+
+    const radius = 42;
+    const circumference = 2 * Math.PI * radius;
+    let offset = 0;
+
+    return (
+        <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-center">
+                <svg viewBox="0 0 140 140" className="w-40 h-40">
+                    <circle cx="70" cy="70" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="20" />
+                    {data.map((item) => {
+                        const valueLength = total > 0 ? (item.value / total) * circumference : 0;
+                        const circle = (
+                            <circle
+                                key={item.label}
+                                cx="70"
+                                cy="70"
+                                r={radius}
+                                fill="none"
+                                stroke={item.color}
+                                strokeWidth="20"
+                                strokeLinecap="round"
+                                strokeDasharray={`${valueLength} ${circumference}`}
+                                strokeDashoffset={-offset}
+                                transform="rotate(-90 70 70)"
+                            />
+                        );
+                        offset += valueLength;
+                        return circle;
+                    })}
+                </svg>
+            </div>
+            <div className="space-y-2">
+                {data.map((item) => (
+                    <div key={item.label} className="flex items-center justify-between text-sm text-slate-600">
+                        <div className="flex items-center gap-2">
+                            <span className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                            <span>{item.label}</span>
+                        </div>
+                        <span className="font-semibold text-slate-800">{item.value}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const AverageCaloriesChart: React.FC<{ data: DailyCaloriesPoint[] }> = ({ data }) => {
+    const maxValue = Math.max(...data.map((item) => item.value), 1);
+
+    if (!data.length || data.every((item) => item.value === 0)) {
+        return <p className="text-sm text-slate-500">No data available</p>;
+    }
+
+    return (
+        <div className="w-full">
+            <svg viewBox="0 0 320 180" className="w-full h-48">
+                <line x1="20" y1="150" x2="300" y2="150" stroke="#cbd5e1" strokeWidth="1" />
+                {data.map((item, index) => {
+                    const barWidth = 32;
+                    const gap = 20;
+                    const x = 30 + index * (barWidth + gap);
+                    const height = (item.value / maxValue) * 110;
+                    const y = 150 - height;
+
+                    return (
+                        <g key={item.label}>
+                            <rect x={x} y={y} width={barWidth} height={height} rx="8" fill="#10b981" opacity="0.9" />
+                            <text x={x + barWidth / 2} y="168" textAnchor="middle" className="fill-slate-500 text-[10px] font-semibold">
+                                {item.label}
+                            </text>
+                            <text x={x + barWidth / 2} y={y - 8} textAnchor="middle" className="fill-slate-700 text-[10px] font-bold">
+                                {item.value}
+                            </text>
+                        </g>
+                    );
+                })}
+            </svg>
+        </div>
+    );
+};
 
 // ---- Component ----
 
@@ -43,26 +184,27 @@ const NutritionistDashboard: React.FC = () => {
         recentActivityCount: 0
     });
     const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
+    const [approvalData, setApprovalData] = useState<ApprovalPoint[]>([]);
+    const [dailyCaloriesData, setDailyCaloriesData] = useState<DailyCaloriesPoint[]>([]);
 
     useEffect(() => {
         if (!user) return;
 
+        let isMounted = true;
+        const unsubscribeFns: Array<() => void> = [];
+        const logsById = new Map<string, Record<string, any>>();
+
         const fetchData = async () => {
             setLoading(true);
             try {
-                const { collection, query, where, getDocs, getDoc, doc, limit, orderBy } = await import('firebase/firestore');
-                const { db } = await import('../firebase/config');
-
-                // 1. Fetch assigned users count
                 const assignedQ = query(
-                    collection(db, 'nutritionist_requests'),
-                    where('nutritionistId', '==', user.uid),
-                    where('status', '==', 'accepted')
+                    collection(db, 'users'),
+                    where('nutritionistId', '==', user.uid)
                 );
                 const assignedSnap = await getDocs(assignedQ);
                 const assignedCount = assignedSnap.size;
+                const userIds = assignedSnap.docs.map((d) => d.id);
 
-                // 2. Fetch pending requests count
                 const pendingQ = query(
                     collection(db, 'nutritionist_requests'),
                     where('nutritionistId', '==', user.uid),
@@ -71,34 +213,68 @@ const NutritionistDashboard: React.FC = () => {
                 const pendingSnap = await getDocs(pendingQ);
                 const pendingCount = pendingSnap.size;
 
-                // 3. Fetch active plans (approved recommendations)
-                const plansQ = query(
-                    collection(db, 'diet_recommendations'),
-                    where('nutritionistId', '==', user.uid),
-                    where('status', '==', 'approved')
-                );
-                const plansSnap = await getDocs(plansQ);
-                const activePlansCount = plansSnap.size;
-
-                // 4. Fetch recent activity (food logs from assigned users)
-                const userIds = assignedSnap.docs.map(d => d.data().userId).filter(Boolean);
-                let activity: ActivityItem[] = [];
-                
+                let activePlansCount = 0;
                 if (userIds.length > 0) {
-                    const logsQ = query(
-                        collection(db, 'food_logs'),
-                        where('userId', '==', userIds.slice(0, 10)), // Limit to first 10 assigned users for activity
-                        orderBy('createdAt', 'desc'),
-                        limit(5)
-                    );
-                    const logsSnap = await getDocs(logsQ);
-                    
-                    const activityPromises = logsSnap.docs.map(async (logDoc, idx) => {
+                    const planPromises = userIds.map(async (uid) => {
+                        try {
+                            const planDoc = await getDoc(doc(db, 'diet_recommendations', uid));
+                            if (planDoc.exists()) {
+                                const status = planDoc.data().status;
+                                if (status === 'approved' || status === 'active' || !status) {
+                                    return 1;
+                                }
+                            }
+                        } catch (e) {
+                            console.warn(`Failed to fetch plan for user ${uid}:`, e);
+                        }
+                        return 0;
+                    });
+                    const planResults = await Promise.all(planPromises);
+                    activePlansCount = planResults.reduce((a, b) => a + b, 0);
+                }
+
+                const top10UserIds = userIds.slice(0, 10);
+                let activity: ActivityItem[] = [];
+
+                if (top10UserIds.length > 0) {
+                    const logPromises = top10UserIds.map(async (uid) => {
+                        try {
+                            const q = query(
+                                collection(db, 'food_logs'),
+                                where('userId', '==', uid),
+                                orderBy('createdAt', 'desc'),
+                                limit(5)
+                            );
+                            const snap = await getDocs(q);
+                            return snap.docs;
+                        } catch (e) {
+                            console.warn(`Could not fetch logs for user ${uid}:`, e);
+                            return [];
+                        }
+                    });
+
+                    const results = await Promise.all(logPromises);
+                    let allLogs = results.flat();
+
+                    allLogs.sort((a, b) => {
+                        const aTime = a.data().createdAt?.toMillis() || 0;
+                        const bTime = b.data().createdAt?.toMillis() || 0;
+                        return bTime - aTime;
+                    });
+
+                    allLogs = allLogs.slice(0, 5);
+
+                    const activityPromises = allLogs.map(async (logDoc, idx) => {
                         const ld = logDoc.data();
-                        const userDoc = await getDoc(doc(db, 'users', ld.userId));
-                        const userName = userDoc.exists() ? userDoc.data().name : 'User';
+                        let userName = 'User';
+                        try {
+                            const userDoc = await getDoc(doc(db, 'users', ld.userId));
+                            if (userDoc.exists()) userName = userDoc.data().name || 'User';
+                        } catch (e) {
+                            console.warn(`Failed to fetch user ${ld.userId}:`, e);
+                        }
                         const ts = ld.createdAt?.toDate?.() || new Date();
-                        
+
                         return {
                             id: idx + 1,
                             type: 'food_log',
@@ -111,22 +287,70 @@ const NutritionistDashboard: React.FC = () => {
                     activity = await Promise.all(activityPromises);
                 }
 
-                setStats({
-                    assignedUsers: assignedCount,
-                    pendingRequests: pendingCount,
-                    activePlans: activePlansCount,
-                    recentActivityCount: activity.length
+                if (isMounted) {
+                    setStats({
+                        assignedUsers: assignedCount,
+                        pendingRequests: pendingCount,
+                        activePlans: activePlansCount,
+                        recentActivityCount: activity.length
+                    });
+                    setRecentActivity(activity);
+                }
+
+                if (userIds.length === 0) {
+                    if (isMounted) {
+                        setApprovalData([]);
+                        setDailyCaloriesData([]);
+                    }
+                    return;
+                }
+
+                const batches = Array.from({ length: Math.ceil(userIds.length / 10) }, (_, index) =>
+                    userIds.slice(index * 10, index * 10 + 10)
+                );
+
+                batches.forEach((batch) => {
+                    const foodLogsQuery = query(
+                        collection(db, 'food_logs'),
+                        where('userId', 'in', batch)
+                    );
+
+                    const unsubscribe = onSnapshot(foodLogsQuery, (snapshot) => {
+                        snapshot.docChanges().forEach((change) => {
+                            if (change.type === 'removed') {
+                                logsById.delete(change.doc.id);
+                            } else {
+                                logsById.set(change.doc.id, change.doc.data());
+                            }
+                        });
+
+                        const logs = Array.from(logsById.values());
+                        if (isMounted) {
+                            setApprovalData(buildApprovalChartData(logs));
+                            setDailyCaloriesData(buildAverageCaloriesData(logs, userIds.length));
+                        }
+                    }, (error) => {
+                        console.warn('Failed to subscribe to food logs:', error);
+                    });
+
+                    unsubscribeFns.push(unsubscribe);
                 });
-                setRecentActivity(activity);
 
             } catch (err) {
                 console.error('Failed to load dashboard', err);
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         };
 
         fetchData();
+
+        return () => {
+            isMounted = false;
+            unsubscribeFns.forEach((unsubscribe) => unsubscribe());
+        };
     }, [user]);
 
     if (loading) {
@@ -201,6 +425,35 @@ const NutritionistDashboard: React.FC = () => {
                         </div>
                     </Card>
                 ))}
+            </div>
+
+            {/* Charts */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <Card className="p-6">
+                    <div className="flex items-center gap-2 mb-5">
+                        <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                            <FiPieChart className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Food Log Approval Analytics</h3>
+                            <p className="text-xs text-slate-400 font-medium">Assigned users by review status</p>
+                        </div>
+                    </div>
+                    <ApprovalChart data={approvalData} />
+                </Card>
+
+                <Card className="p-6">
+                    <div className="flex items-center gap-2 mb-5">
+                        <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                            <FiBarChart2 className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Average Daily Calories</h3>
+                            <p className="text-xs text-slate-400 font-medium">Last 7 days from food logs</p>
+                        </div>
+                    </div>
+                    <AverageCaloriesChart data={dailyCaloriesData} />
+                </Card>
             </div>
 
             {/* Two-column layout: Activity Feed + Quick Actions */}

@@ -161,8 +161,8 @@ export const markNotificationsAsRead = async (notifications: Notification[]) => 
     await batch.commit();
 };
 
-// --- Consolidated Meal Tracking System (JS SDK v12) ---
-// Using collection: food_logs as per requirement
+
+// food_logs as per requirement
 
 export const trackMealToFirestore = async (userId: string, mealType: string, food: {name: string, kcal: number, protein: number, carbs: number, fats: number}, source: 'ai' | 'manual' = 'ai', portion?: string) => {
     const date = new Date().toISOString().split('T')[0];

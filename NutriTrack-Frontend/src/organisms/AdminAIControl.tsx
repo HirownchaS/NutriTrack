@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../atoms/Card';
 import Button from '../atoms/Button';
-import { getAIModelStatus, triggerRetrain } from '../services/api';
+import { useNotification } from '../context/NotificationContext';
+import { getAIModelStatus, triggerRetrain } from '../services/admin';
 import { FiCpu, FiPlay, FiRefreshCw, FiActivity, FiCheckCircle } from 'react-icons/fi';
 
 
@@ -17,6 +18,7 @@ const AdminAIControl: React.FC = () => {
     const [modelInfo, setModelInfo] = useState<ModelInfo | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [retraining, setRetraining] = useState<boolean>(false);
+    const { success, error } = useNotification();
 
     useEffect(() => {
         fetchModelStatus();
@@ -37,10 +39,10 @@ const AdminAIControl: React.FC = () => {
         setRetraining(true);
         try {
             await triggerRetrain();
-            alert("Model retraining has been initiated.");
+            success('Model retraining has been initiated.');
             fetchModelStatus();
         } catch (err) {
-            alert("Failed to start retraining");
+            error('Failed to start retraining');
         } finally {
             setRetraining(false);
         }

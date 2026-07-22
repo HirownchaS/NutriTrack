@@ -23,6 +23,7 @@ import {
     onSnapshot,
 } from 'firebase/firestore';
 import { auth, secondaryAuth, db } from './config';
+import { addNotification } from '../services/firestore';
 
 // ---- Types ----
 
@@ -82,9 +83,9 @@ export const loginUser = async (email: string, password: string) => {
     return credential.user;
 };
 
-/**
- * Sign out from Firebase.
- */
+
+// Sign out from Firebase.
+
 export const logoutUser = async () => {
     await signOut(auth);
 };
@@ -275,7 +276,6 @@ export const sendNutritionistRequest = async (userId: string, nutritionistId: st
         }
 
         // Fetch user data to duplicate into the request for nutritionist visibility
-        const { getDoc, doc } = await import('firebase/firestore');
         const userDoc = await getDoc(doc(db, 'users', userId));
         const userData = userDoc.exists() ? userDoc.data() : {};
 
@@ -293,7 +293,6 @@ export const sendNutritionistRequest = async (userId: string, nutritionistId: st
         });
 
         // Add real-time notification for the nutritionist
-        const { addNotification } = await import('../services/firestore');
         const userName = userData.name || 'User';
 
         await addNotification({

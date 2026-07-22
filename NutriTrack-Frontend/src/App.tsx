@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import Login from './pages/Login';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -68,27 +69,29 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 const App: React.FC = () => {
     return (
-        <AuthProvider>
-            <Router>
-                <Routes>
-                    {/* Public/Auth Routes */}
-                    <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-                    <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-                    <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
-                    <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
-                    
-                    {/* Protected Routes */}
-                    <Route path="/profile-setup" element={<ProfileGuard><ProfileSetup /></ProfileGuard>} />
-                    <Route path="/dashboard/*" element={<ProtectedRoute allowedRoles={['user']}><Dashboard /></ProtectedRoute>} />
-                    <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['admin']}><AdminPanel /></ProtectedRoute>} />
-                    <Route path="/nutritionist-dashboard/*" element={<ProtectedRoute allowedRoles={['nutritionist']}><NutritionistPanel /></ProtectedRoute>} />
-                    
-                    {/* Fallback Routes */}
-                    <Route path="/" element={<PublicRoute><Navigate to="/login" replace /></PublicRoute>} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Routes>
-            </Router>
-        </AuthProvider>
+        <NotificationProvider>
+            <AuthProvider>
+                <Router>
+                    <Routes>
+                        {/* Public/Auth Routes */}
+                        <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+                        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+                        <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+                        <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+                        
+                        {/* Protected Routes */}
+                        <Route path="/profile-setup" element={<ProfileGuard><ProfileSetup /></ProfileGuard>} />
+                        <Route path="/dashboard/*" element={<ProtectedRoute allowedRoles={['user']}><Dashboard /></ProtectedRoute>} />
+                        <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['admin']}><AdminPanel /></ProtectedRoute>} />
+                        <Route path="/nutritionist-dashboard/*" element={<ProtectedRoute allowedRoles={['nutritionist']}><NutritionistPanel /></ProtectedRoute>} />
+                        
+                        {/* Fallback Routes */}
+                        <Route path="/" element={<PublicRoute><Navigate to="/login" replace /></PublicRoute>} />
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                </Router>
+            </AuthProvider>
+        </NotificationProvider>
     );
 };
 

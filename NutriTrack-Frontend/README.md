@@ -71,3 +71,6 @@ export default defineConfig([
   },
 ])
 ```
+
+
+<!-- uvicorn app.main:app --reload -->

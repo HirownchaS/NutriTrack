@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Card from '../atoms/Card';
 import Input from '../atoms/Input';
 import Button from '../atoms/Button';
-import { setGoals } from '../services/api';
+import { setGoals } from '../services/profile';
 import { auth, db } from '../firebase/config';
 import { doc, getDoc } from 'firebase/firestore';
 
@@ -108,7 +108,7 @@ const GoalForm: React.FC<GoalFormProps> = ({ onSuccess }) => {
                         onChange={handleChange}
                         required
                     />
-                    <div className="grid grid-cols-3 gap-3">
+                    {/* <div className="grid grid-cols-3 gap-3">
                         <Input
                             id="protein"
                             label="Protein (g)"
@@ -133,7 +133,7 @@ const GoalForm: React.FC<GoalFormProps> = ({ onSuccess }) => {
                             onChange={handleChange}
                             required
                         />
-                    </div>
+                    </div> */}
                 </div>
 
                 <Button

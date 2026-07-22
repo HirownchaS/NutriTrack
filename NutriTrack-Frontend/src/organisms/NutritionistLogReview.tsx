@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../atoms/Card';
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { db } from '../firebase/config';
 import Button from '../atoms/Button';
-import { getAssignedUsers, getUserFullData, approveFoodLog } from '../services/api';
+import { useNotification } from '../context/NotificationContext';
+import { getAssignedUsers, getUserFullData, approveFoodLog } from '../services/nutritionist';
 import { FiCheckCircle, FiXCircle, FiEdit3, FiCalendar } from 'react-icons/fi';
 
 
@@ -31,6 +34,7 @@ const NutritionistLogReview: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [auditFeedback, setAuditFeedback] = useState<Record<string, string>>({}); 
     const [error, setError] = useState<string | null>(null);
+    const { success, error: notifyError } = useNotification();
 
     const [stats, setStats] = useState({ totalCalories: 0, avgCalories: 0 });
 
@@ -59,17 +63,21 @@ const NutritionistLogReview: React.FC = () => {
                 setLoading(true);
                 setError(null);
                 
-                const { collection, query, where, getDocs, orderBy } = await import('firebase/firestore');
-                const { db } = await import('../firebase/config');
-
                 const q = query(
                     collection(db, 'food_logs'),
                     where('userId', '==', selectedUserId),
                     orderBy('createdAt', 'desc')
                 );
-                const snap = await getDocs(q);
                 
-                const logs = snap.docs.map(doc => {
+                let snap;
+                try {
+                    snap = await getDocs(q);
+                } catch (e) {
+                    console.warn("Permission denied or missing index for logs, falling back to empty:", e);
+                    snap = { docs: [] }; // Handle gracefully if rules deny access or index missing
+                }
+                
+                const logs = snap.docs.map((doc: any) => {
                     const data = doc.data();
                     return {
                         id: doc.id,
@@ -86,7 +94,7 @@ const NutritionistLogReview: React.FC = () => {
                     };
                 }) as any[];
 
-                const total = logs.reduce((acc, log) => acc + log.calories, 0);
+                const total = logs.reduce((acc: any, log: any) => acc + log.calories, 0);
                 const avg = logs.length > 0 ? Math.round(total / logs.length) : 0;
 
                 setLogData(logs);
@@ -106,10 +114,10 @@ const NutritionistLogReview: React.FC = () => {
         try {
             const feedback = auditFeedback[logId] || '';
             await approveFoodLog(logId, status, feedback);
-            alert(`Log ${status} successfully!`);
+            success(`Log ${status} successfully!`);
             setLogData(prev => prev.map(log => log.id === logId ? { ...log, status, nutritionist_feedback: feedback } : log));
         } catch (error: any) {
-            alert("Failed to update log: " + error.message);
+            notifyError("Failed to update log: " + error.message);
         }
     };
 
@@ -138,7 +146,7 @@ const NutritionistLogReview: React.FC = () => {
                             </div>
                         </div>
                         <select
-                            className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                            className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 pr-10 text-sm font-bold shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none appearance-none -webkit-appearance-none -moz-appearance-none custom-select"
                             value={selectedUserId || ''}
                             onChange={(e) => setSelectedUserId(e.target.value)}
                         >
@@ -171,13 +179,13 @@ const NutritionistLogReview: React.FC = () => {
                                 </h3>
                                 {logs.map((log: any) => (
                                     <Card key={log.id} className="p-6 border-emerald-50 flex flex-col md:flex-row gap-6 hover:shadow-md transition-shadow">
-                                        <div className="w-full md:w-32 h-32 bg-slate-100 rounded-2xl overflow-hidden flex items-center justify-center text-slate-400 italic text-xs text-center border border-slate-100">
+                                        {/* <div className="w-full md:w-32 h-32 bg-slate-100 rounded-2xl overflow-hidden flex items-center justify-center text-slate-400 italic text-xs text-center border border-slate-100">
                                             {log.imageUrl ? (
                                                 <img src={log.imageUrl} alt={log.foodName} className="w-full h-full object-cover" />
                                             ) : (
                                                 <span>No Image</span>
                                             )}
-                                        </div>
+                                        </div> */}
 
                                         <div className="flex-1 flex flex-col justify-between">
                                             <div>

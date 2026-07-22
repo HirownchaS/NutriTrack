@@ -91,7 +91,7 @@ const NutritionCard: React.FC<NutritionCardProps> = ({ detection, colorIndex = 0
             </div>
 
             {/* Confidence */}
-            <div className="px-5 pb-3">
+            {/* <div className="px-5 pb-3">
                 <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">AI Confidence</span>
                     <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -105,7 +105,7 @@ const NutritionCard: React.FC<NutritionCardProps> = ({ detection, colorIndex = 0
                     </div>
                     <span className="text-[10px] font-black text-slate-600">{Math.round(detection.confidence * 100)}%</span>
                 </div>
-            </div>
+            </div> */}
         </Card>
     );
 };

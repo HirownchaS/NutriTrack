@@ -17,6 +17,7 @@ interface ProfileForm {
     activityLevel: string;
     fitnessGoal: string;
     healthCondition: string;
+    
 }
 
 const Profile: React.FC = () => {
@@ -31,6 +32,7 @@ const Profile: React.FC = () => {
         activityLevel: 'moderate',
         fitnessGoal: 'maintain weight',
         healthCondition: 'none',
+    
     });
     const [saved, setSaved] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
@@ -59,7 +61,7 @@ const Profile: React.FC = () => {
                         allergies: profileData.allergies || '',
                         activityLevel: profileData.activityLevel || 'moderate',
                         fitnessGoal: profileData.fitnessGoal || 'maintain weight',
-                        healthCondition: profileData.healthCondition || 'none',
+                        healthCondition: profileData.healthCondition || 'none'
                     });
                 }
             } catch (err) {
@@ -94,10 +96,12 @@ const Profile: React.FC = () => {
             const user = auth.currentUser;
             if (!user) throw new Error("User not authenticated");
 
-            await updateUserDoc(user.uid, {
+            const updateData: Record<string, any> = {
                 ...form,
                 updatedAt: new Date(),
-            });
+            };
+            
+            await updateUserDoc(user.uid, updateData);
 
             setSaved(true);
             setTimeout(() => setSaved(false), 3000);
@@ -147,7 +151,7 @@ const Profile: React.FC = () => {
                                     <label htmlFor="gender" className="mb-2 text-sm font-semibold text-slate-700">Gender</label>
                                     <select
                                         id="gender" name="gender" value={form.gender} onChange={handleSelectChange}
-                                        className="px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                                        className="px-4 py-2 pr-10 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white appearance-none -webkit-appearance-none -moz-appearance-none custom-select"
                                     >
                                         <option value="male">Male</option>
                                         <option value="female">Female</option>
@@ -156,13 +160,14 @@ const Profile: React.FC = () => {
                                 </div>
 
                                 <Input id="weight" label="Weight (kg)" type="number" placeholder="70" value={form.weight} onChange={handleChange} required />
+                               
                                 <Input id="height" label="Height (cm)" type="number" placeholder="175" value={form.height} onChange={handleChange} required />
 
                                 <div className="flex flex-col">
                                     <label htmlFor="activityLevel" className="mb-2 text-sm font-semibold text-slate-700">Activity Level</label>
                                     <select
                                         id="activityLevel" name="activityLevel" value={form.activityLevel} onChange={handleSelectChange}
-                                        className="px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                                        className="px-4 py-2 pr-10 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white appearance-none -webkit-appearance-none -moz-appearance-none custom-select"
                                     >
                                         <option value="sedentary">Sedentary</option>
                                         <option value="light">Lightly Active</option>
@@ -182,7 +187,7 @@ const Profile: React.FC = () => {
                                     <label htmlFor="fitnessGoal" className="mb-2 text-sm font-semibold text-slate-700">Fitness Goal</label>
                                     <select
                                         id="fitnessGoal" name="fitnessGoal" value={form.fitnessGoal} onChange={handleSelectChange}
-                                        className="px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                                        className="px-4 py-2 pr-10 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white appearance-none -webkit-appearance-none -moz-appearance-none custom-select"
                                     >
                                         <option value="lose weight">Lose Weight</option>
                                         <option value="maintain weight">Maintain Weight</option>
@@ -195,7 +200,7 @@ const Profile: React.FC = () => {
                                     <label htmlFor="healthCondition" className="mb-2 text-sm font-semibold text-slate-700">Health Condition</label>
                                     <select
                                         id="healthCondition" name="healthCondition" value={form.healthCondition} onChange={handleSelectChange}
-                                        className="px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                                        className="px-4 py-2 pr-10 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white appearance-none -webkit-appearance-none -moz-appearance-none custom-select"
                                     >
                                         <option value="none">None</option>
                                         <option value="diabetes">Diabetes</option>
@@ -216,7 +221,7 @@ const Profile: React.FC = () => {
                                     <label htmlFor="dietaryPreference" className="mb-2 text-sm font-semibold text-slate-700">Diet Type</label>
                                     <select
                                         id="dietaryPreference" name="dietaryPreference" value={form.dietaryPreference} onChange={handleSelectChange}
-                                        className="px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                                        className="px-4 py-2 pr-10 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white appearance-none -webkit-appearance-none -moz-appearance-none custom-select"
                                     >
                                         <option value="none">No Preference</option>
                                         <option value="vegetarian">Vegetarian</option>

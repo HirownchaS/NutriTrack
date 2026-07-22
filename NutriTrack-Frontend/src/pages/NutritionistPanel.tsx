@@ -15,22 +15,18 @@ const NutritionistPanel: React.FC = () => {
     return (
         <DashboardLayout>
             <Routes>
-                {/* Default to Dashboard Home */}
+               
                 <Route index element={<Navigate to="/nutritionist-dashboard/home" replace />} />
 
-                {/* Dashboard Overview */}
+               
                 <Route path="home" element={<NutritionistDashboard />} />
 
-                {/* User Management & Requests */}
+               
                 <Route path="users" element={<NutritionistUsers />} />
 
-                {/* Food Log Auditing */}
+         
                 <Route path="review-logs" element={<NutritionistLogReview />} />
-
-                {/* Diet Plan Creator */}
                 <Route path="diet-plans" element={<NutritionistDietPlan />} />
-
-                {/* User Progress Monitoring */}
                 <Route path="progress" element={<NutritionistUserProgress />} />
 
                 {/* User Messaging */}
@@ -44,13 +40,13 @@ const NutritionistPanel: React.FC = () => {
                     </div>
                 } />
 
-                {/* View All Users */}
+                
                 <Route path="all-users" element={<AllUsersPlaceholder />} />
 
-                {/* Profile Section */}
+                
                 <Route path="profile" element={<Profile />} />
 
-                {/* Fallback */}
+                
                 <Route path="*" element={<Navigate to="/nutritionist-dashboard/home" replace />} />
             </Routes>
         </DashboardLayout>

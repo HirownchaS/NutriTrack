@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getDietRecommendation } from '../services/api';
+import { getDietRecommendation } from '../services/dietRecommendation';
 import Card from '../atoms/Card';
 import Badge from '../atoms/Badge';
 import MealCard from '../molecules/MealCard';
@@ -128,7 +128,7 @@ const DietRecommendation: React.FC = () => {
                         </div>
                         <div>
                             <h2 className="text-2xl font-black text-slate-800 tracking-tight">Your Personalized Strategy</h2>
-                            <p className="text-slate-500 font-medium mt-1 uppercase text-xs tracking-widest">AI Generated Insight</p>
+                           
 
                             <div className="mt-6 p-6 bg-slate-50 rounded-2xl border border-slate-100 leading-relaxed text-slate-700 font-semibold italic">
                                 "{data.mealPlan}"

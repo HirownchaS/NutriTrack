@@ -120,6 +120,7 @@ const ResetPasswordForm: React.FC = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         required
                         disabled={!!error && !email}
+                        showPasswordToggle
                     />
                     <Input
                         id="confirm-password"
@@ -130,6 +131,7 @@ const ResetPasswordForm: React.FC = () => {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
                         disabled={!!error && !email}
+                        showPasswordToggle
                     />
 
                     <Button

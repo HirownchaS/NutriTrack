@@ -17,34 +17,24 @@ const AdminPanel: React.FC = () => {
     return (
         <DashboardLayout>
             <Routes>
-                {/* Default to Analytics */}
-                <Route index element={<Navigate to="analytics" replace />} />
+                
 
-                {/* Analytics Dashboard */}
                 <Route path="analytics" element={<AdminAnalytics />} />
 
                 {/* Manage All Users */}
                 <Route path="users" element={<AdminUserManagement />} />
-
-                {/* Manage Nutritionists */}
                 <Route path="nutritionists" element={<AdminNutritionistManagement />} />
 
-                {/* Add Nutritionist */}
+            
                 <Route path="add-nutritionist" element={<AdminAddNutritionist />} />
-
-                {/* Food Database Management
-                <Route path="food-database" element={<AdminFoodDatabase />} /> */}
-
-                {/* AI Model Management */}
                 <Route path="ai-control" element={<AdminAIControl />} />
 
-                {/* Tracking Reports */}
+                
                 <Route path="tracking-reports" element={<AdminLogMonitor />} />
 
-                {/* Profile Section */}
                 <Route path="profile" element={<Profile />} />
 
-                {/* Fallback */}
+                
                 <Route path="*" element={<Navigate to="analytics" replace />} />
             </Routes>
         </DashboardLayout>

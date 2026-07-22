@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import Card from '../atoms/Card';
 import Button from '../atoms/Button';
-import { sendMessage, subscribeToMessages } from '../services/api';
+import { sendMessage, subscribeToMessages } from '../services/chat';
 import { useAuth } from '../context/AuthContext';
 import { FiSend, FiMessageSquare } from 'react-icons/fi';
+
+import { useNotification } from '../context/NotificationContext';
 
 interface Message {
     id: string | number;
@@ -22,6 +24,7 @@ interface ChatModuleProps {
 const ChatModule: React.FC<ChatModuleProps> = ({ recipientId, recipientName }) => {
     const { user } = useAuth();
     const location = useLocation();
+    const { error } = useNotification();
     
     // Extract recipient from props, OR location state
     const actualRecipientId = recipientId || location.state?.recipientId;
@@ -67,8 +70,8 @@ const ChatModule: React.FC<ChatModuleProps> = ({ recipientId, recipientName }) =
             });
             setNewMessage('');
             // No need to fetchMessages, the onSnapshot listener will trigger automatically!
-        } catch (error) {
-            alert("Failed to send message");
+        } catch (err) {
+            error("Failed to send message");
         } finally {
             setLoading(false);
         }

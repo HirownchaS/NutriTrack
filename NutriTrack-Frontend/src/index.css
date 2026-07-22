@@ -37,3 +37,24 @@ body {
 * {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.custom-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='%234b5563' d='M5.23 7.21L10 11.98l4.77-4.77a.75.75 0 111.06 1.06l-5.3 5.3a.75.75 0 01-1.06 0l-5.3-5.3a.75.75 0 111.06-1.06z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+  padding-right: 2.75rem;
+  color: #0f172a;
+  line-height: 1.75;
+}
+
+.custom-select:focus {
+  background-position: right 1rem center;
+}
+
+.custom-select::-ms-expand {
+  display: none;
+}

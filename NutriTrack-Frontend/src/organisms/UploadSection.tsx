@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import Card from '../atoms/Card';
 import Button from '../atoms/Button';
-import { uploadImage } from '../services/api';
+import { uploadImage } from '../services/foodDetection';
 import type { Detection, DetectionResult } from '../types/nutrition';
 import { saveDetectionToFirestore, saveMealToFirestore, saveFoodLogToFirestore } from '../services/firestore';
 import { useAuth } from '../context/AuthContext';
@@ -147,11 +147,9 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onDetectionComplete }) =>
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    /**
-     * Calculate bounding box position as CSS percentages relative to the displayed image.
-     * YOLO returns absolute pixel coords [x1, y1, x2, y2] based on the 640px inference size,
-     * so we scale them relative to the natural image dimensions.
-     */
+    
+    //   Calculate bounding box position and size based on YOLO output and displayed image dimensions.
+    
     const getBboxStyle = (bbox: [number, number, number, number], colorIndex: number) => {
         if (!imageDimensions || !imageRef.current) return {};
 
@@ -261,7 +259,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onDetectionComplete }) =>
                                             .map((det, i) => (
                                                 <div key={`bbox-${i}`} style={getBboxStyle(det.bbox, i)}>
                                                     <span style={getLabelStyle(i)}>
-                                                        {det.food.replace(/_/g, ' ')} {Math.round(det.confidence * 100)}%
+                                                        {det.food.replace(/_/g, ' ')} 
                                                     </span>
                                                 </div>
                                             ))}

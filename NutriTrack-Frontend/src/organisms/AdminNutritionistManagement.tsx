@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../atoms/Card';
 import Button from '../atoms/Button';
-import { getAllUsers, deleteNutritionist } from '../services/api';
+import { useNotification } from '../context/NotificationContext';
+import { getAllUsers, deleteNutritionist } from '../services/admin';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { FiUserPlus, FiCheckCircle, FiEye, FiTrash2, FiX, FiBriefcase, FiAward } from 'react-icons/fi';
@@ -53,6 +54,7 @@ const AdminNutritionistManagement: React.FC = () => {
     const navigate = useNavigate();
     const [nutritionists, setNutritionists] = useState<User[]>([]);
     const [nutriStats, setNutriStats] = useState<Record<string, NutriStats>>({});
+    const { error } = useNotification();
     const [loading, setLoading] = useState(true);
     const [selectedNutri, setSelectedNutri] = useState<User | null>(null);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -114,7 +116,7 @@ const AdminNutritionistManagement: React.FC = () => {
             await deleteNutritionist(n.id);
             fetchData();
         } catch (e: any) {
-            alert(e.message);
+            error(e.message || 'Failed to delete nutritionist. Please try again.');
         }
     };
 
@@ -125,9 +127,7 @@ const AdminNutritionistManagement: React.FC = () => {
                     <h2 className="text-2xl font-black text-slate-800 tracking-tight">Nutritionists</h2>
                     <p className="text-slate-500 text-sm font-medium mt-1">Manage healthcare providers and verify credentials.</p>
                 </div>
-                <Button variant="primary" onClick={() => navigate('/admin/add-nutritionist')} className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700">
-                    <FiUserPlus /> Add Provider
-                </Button>
+                
             </div>
 
             <Card className="overflow-hidden shadow-xl">

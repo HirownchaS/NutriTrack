@@ -2,7 +2,11 @@ import React from 'react';
 import Card from '../atoms/Card';
 import Badge from '../atoms/Badge';
 import { FiZap, FiTarget, FiActivity } from 'react-icons/fi';
+import { auth } from '../firebase/config';
+import { trackMeal } from '../services/tracking';
 
+
+import { useNotification } from '../context/NotificationContext';
 
 interface MealCardProps {
     name: string;
@@ -14,6 +18,8 @@ interface MealCardProps {
 }
 
 const MealCard: React.FC<MealCardProps> = ({ name, kcal, p, c, f, desc }) => {
+    const { success, error } = useNotification();
+
     return (
         <Card className="flex flex-col h-full hover:shadow-lg transition-all duration-300 border border-slate-100 group">
             <div className="p-5 flex flex-col h-full">
@@ -57,8 +63,6 @@ const MealCard: React.FC<MealCardProps> = ({ name, kcal, p, c, f, desc }) => {
 
                     <button
                         onClick={async () => {
-                            const { auth } = await import('../firebase/config');
-                            const { trackMeal } = await import('../services/api');
                             const user = auth.currentUser;
                             if (!user) return;
 
@@ -71,10 +75,10 @@ const MealCard: React.FC<MealCardProps> = ({ name, kcal, p, c, f, desc }) => {
                                     food: { name, kcal, p, c, f },
                                     source: 'ai'
                                 });
-                                alert(`Success: ${name} has been logged to your daily intake.`);
+                                success(`Success: ${name} has been logged to your daily intake.`);
                             } catch (err) {
                                 console.error(err);
-                                alert('Failed to log meal. Please try again.');
+                                error('Failed to log meal. Please try again.');
                             }
                         }}
                         className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm transition-colors shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2"

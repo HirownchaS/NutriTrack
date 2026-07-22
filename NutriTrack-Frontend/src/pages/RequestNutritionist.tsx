@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { getDoc, doc, collection, query, where, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebase/config';
 import { getNutritionists, sendNutritionistRequest, getUserAllNutritionistRequests } from '../firebase/auth';
 import { useAuth } from '../context/AuthContext';
 import NutritionistCard from '../molecules/NutritionistCard';
 import { FiUsers, FiSearch, FiInfo } from 'react-icons/fi';
 import { Nutritionist } from '../types/nutrition';
+import { useNotification } from '../context/NotificationContext';
 
 
 
@@ -16,6 +19,7 @@ const RequestNutritionist: React.FC = () => {
     const [isFallback, setIsFallback] = useState<boolean>(false);
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [error, setError] = useState<string>('');
+    const { success, warning, error: notifyError } = useNotification();
 
     // Mapping for common fitness goal synonyms to improve matching
     const GOAL_SYNONYMS: Record<string, string[]> = {
@@ -35,8 +39,6 @@ const RequestNutritionist: React.FC = () => {
             // 1. Fetch User Data to get fitness goal
             let goalValue = '';
             try {
-                const { getDoc, doc } = await import('firebase/firestore');
-                const { db } = await import('../firebase/config');
                 const userDoc = await getDoc(doc(db, 'users', user.uid));
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
@@ -93,8 +95,6 @@ const RequestNutritionist: React.FC = () => {
 
             // 3. Setup User's Request Statuses Real-time Listener
             try {
-                const { collection, query, where, onSnapshot } = await import('firebase/firestore');
-                const { db } = await import('../firebase/config');
                 const unsubscribe = onSnapshot(
                     query(
                         collection(db, "nutritionist_requests"),
@@ -141,14 +141,14 @@ const RequestNutritionist: React.FC = () => {
         try {
             await sendNutritionistRequest(user.uid, idStr);
             setRequestStatuses(prev => ({ ...prev, [idStr]: 'pending' }));
-            alert('Request sent successfully!');
+            success('Request sent successfully!');
         } catch (err: any) {
             console.error("Request Error:", err);
             if (err.message === 'duplicate-request') {
-                alert('You have already sent a request to this nutritionist.');
+                warning('You have already sent a request to this nutritionist.');
                 setRequestStatuses(prev => ({ ...prev, [idStr]: 'pending' }));
             } else {
-                alert('Failed to send request. Please try again.');
+                notifyError('Failed to send request. Please try again.');
             }
         }
     };

@@ -1,3 +1,4 @@
+from ast import Load
 import io
 import json
 import os
@@ -37,7 +38,7 @@ app.add_middleware(
 )
 
 # Load trained YOLOv8 food model
-MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models", "model.safetensors")
+MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models", "best.pt")
 model = YOLO(MODEL_PATH) 
 
 # USDA FoodData Central API
@@ -56,22 +57,37 @@ NUTRIENT_IDS = {
 # In-memory cache for USDA results
 _usda_cache: dict = {}
 
-# Load local nutrition database as fallback
+#Load local nutrition database as fallback
 NUTRITION_DB_PATH = os.path.join(os.path.dirname(__file__), "nutrition_db.json")
+nutrition_db = {}
 try:
-    with open(NUTRITION_DB_PATH, "r") as f:
+    with open(NUTRITION_DB_PATH, "r", encoding="utf-8") as f:
         nutrition_db = json.load(f)
 except Exception:
     nutrition_db = {}
 
 
 def normalize_food_name(name: str) -> str:
-    """Normalize food name: lowercase, replace underscores/hyphens with spaces, strip extra whitespace."""
+    "Normalize food name: lowercase, replace underscores/hyphens with spaces, strip extra whitespace."
     return name.lower().strip().replace("_", " ").replace("-", " ")
 
 
+def estimate_portion_grams(xyxy: list, image_area: float, confidence: float) -> float:
+    "Estimate portion size from bbox shape, relative area, and confidence instead of pure area proportion."
+    bbox_width = max(xyxy[2] - xyxy[0], 1.0)
+    bbox_height = max(xyxy[3] - xyxy[1], 1.0)
+    bbox_area = bbox_width * bbox_height
+    relative_area = bbox_area / max(image_area, 1.0)
+    aspect_factor = 1.0 - min(abs((bbox_width / bbox_height) - 1.0), 1.0) * 0.25
+    confidence_factor = 0.8 + min(max(confidence, 0.25), 1.0) * 0.4
+    portion = 90 + relative_area * 700
+    portion *= confidence_factor * aspect_factor
+    portion = min(max(portion, 40.0), 700.0)
+    return round(portion, 2)
+
+
 def extract_nutrient(food_data: dict, nutrient_id: int) -> float:
-    """Extract a specific nutrient value from USDA food item by nutrient ID."""
+    "Extract a specific nutrient value from USDA food item by nutrient ID."
     for nutrient in food_data.get("foodNutrients", []):
         if nutrient.get("nutrientId") == nutrient_id:
             return float(nutrient.get("value", 0) or 0)
@@ -182,8 +198,7 @@ async def predict_food_image(image_bytes: bytes) -> dict:
                 conf = float(box.conf[0])
                 label = model.names[cls_id]
                 xyxy = box.xyxy[0].tolist()
-                bbox_area = (xyxy[2] - xyxy[0]) * (xyxy[3] - xyxy[1])
-                portion_grams = min((bbox_area / image_area) * 500, 800)
+                portion_grams = estimate_portion_grams(xyxy, image_area, conf)
                 food_labels.append(label)
                 box_data.append((label, conf, xyxy, portion_grams))
 

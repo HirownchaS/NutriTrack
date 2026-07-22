@@ -13,7 +13,7 @@ import RequestNutritionist from './RequestNutritionist';
 import ChatModule from '../molecules/ChatModule';
 import ManualFoodLogForm from '../molecules/ManualFoodLogForm';
 import Card from '../atoms/Card';
-import { getRecentFoodUploads, getActiveDietPlan, getDailyIntakeHistory } from '../services/api';
+import { getRecentFoodUploads, getActiveDietPlan, getDailyIntakeHistory } from '../services/dashboard';
 import { FiClock, FiTarget, FiTrendingUp, FiCheckCircle, FiAlertCircle, FiArrowUp, FiLock } from 'react-icons/fi';
 import { RecentUpload, DietPlan, IntakeHistory, DetectionResult } from '../types/nutrition';
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../atoms/Card';
-import { getNutritionSummary } from '../services/api';
-
+import { getNutritionSummary } from '../services/profile';
+import { getDailyProgress } from '../services/tracking';
+import { auth } from '../firebase/config';
 
 
 interface NutritionData {
@@ -20,8 +21,6 @@ const NutritionSummary: React.FC<NutritionSummaryProps> = ({ overrideData }) => 
 
     useEffect(() => {
         const fetchSummary = async () => {
-            const { auth } = await import('../firebase/config');
-            const { getDailyProgress } = await import('../services/api');
             const user = auth.currentUser;
             if (!user) return;
 

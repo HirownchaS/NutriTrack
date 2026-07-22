@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Card from '../atoms/Card';
 import Input from '../atoms/Input';
 import Button from '../atoms/Button';
-import { createNutritionistAccount } from '../firebase/auth'; // Import direct Firebase Auth function
+import { createNutritionistAccount } from '../firebase/auth'; 
 import { useAuth } from '../context/AuthContext';
 import { FiUserPlus, FiCheckCircle, FiAlertCircle } from 'react-icons/fi';
 
@@ -145,6 +145,7 @@ const AdminAddNutritionist: React.FC = () => {
                         value={form.password}
                         onChange={handleChange}
                         required
+                        showPasswordToggle
                     />
 
                     {/* Row 3: Specialization, Experience */}
@@ -158,7 +159,7 @@ const AdminAddNutritionist: React.FC = () => {
                                 name="specialization"
                                 value={form.specialization}
                                 onChange={handleSelectChange}
-                                className="px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white"
+                                className="px-4 py-2 pr-10 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 bg-white appearance-none -webkit-appearance-none -moz-appearance-none custom-select"
                                 required
                             >
                                 <option value="">Select Specialization</option>
