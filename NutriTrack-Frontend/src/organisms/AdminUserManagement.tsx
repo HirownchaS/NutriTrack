@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { collection, getDocs, doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../firebase/config';
+import { goalsMatch } from '../services/goalMatching';
 import Card from '../atoms/Card';
 import Button from '../atoms/Button';
 import {
@@ -20,6 +21,7 @@ interface FirestoreUser {
     height?: number;
     gender?: string;
     fitnessGoal?: string;
+    specialization?: string;
     healthCondition?: string;
     nutritionistId?: string;
     assignedNutritionistName?: string; // resolved after fetch
@@ -145,7 +147,7 @@ const ROLES = ['user', 'nutritionist', 'admin'] as const;
 
 const AdminUserManagement: React.FC = () => {
     const [users, setUsers] = useState<FirestoreUser[]>([]);
-    const [nutritionists, setNutritionists] = useState<{ uid: string; name: string }[]>([]);
+    const [nutritionists, setNutritionists] = useState<{ uid: string; name: string; specialization?: string }[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -223,7 +225,7 @@ const AdminUserManagement: React.FC = () => {
             setNutritionists(
                 resolved
                     .filter(u => u.role === 'nutritionist')
-                    .map(u => ({ uid: u.uid, name: u.name }))
+                    .map(u => ({ uid: u.uid, name: u.name, specialization: u.specialization }))
             );
         } catch (err) {
             const msg = err instanceof Error ? err.message : 'Failed to load users';
@@ -246,6 +248,12 @@ const AdminUserManagement: React.FC = () => {
 
     const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
     const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+    const suitableNutritionists = selectedUser?.fitnessGoal
+        ? nutritionists.filter(n =>
+            typeof n.specialization === 'string' && goalsMatch(selectedUser.fitnessGoal || '', n.specialization)
+        )
+        : [];
 
     // Reset to page 1 on filter change
     useEffect(() => setPage(1), [searchTerm, roleFilter]);
@@ -478,6 +486,7 @@ const AdminUserManagement: React.FC = () => {
                                                 </button>
                                                 <button
                                                     onClick={() => openModal(user, 'edit')}
+                                                    disabled={user.role === 'nutritionist'}
                                                     className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 transition-all"
                                                     title="Edit user"
                                                 >
@@ -639,7 +648,10 @@ const AdminUserManagement: React.FC = () => {
 
                         <div className="mt-6 flex justify-end gap-3">
                             <Button variant="secondary" onClick={closeModal}>Close</Button>
-                            <Button onClick={() => { closeModal(); setTimeout(() => openModal(selectedUser, 'edit'), 50); }}>
+                            <Button
+                                onClick={() => { closeModal(); setTimeout(() => openModal(selectedUser, 'edit'), 50); }}
+                                disabled={selectedUser.role === 'nutritionist'}
+                            >
                                 <span className="flex items-center gap-2"><FiEdit2 className="w-3.5 h-3.5" /> Edit User</span>
                             </Button>
                         </div>
@@ -689,11 +701,11 @@ const AdminUserManagement: React.FC = () => {
                                 className="w-full px-4 py-2.5 pr-10 border border-slate-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all appearance-none -webkit-appearance-none -moz-appearance-none custom-select"
                             >
                                 <option value="">— Not Assigned —</option>
-                                {nutritionists.map(n => (
+                                {suitableNutritionists.map(n => (
                                     <option key={n.uid} value={n.uid}>{n.name}</option>
                                 ))}
                             </select>
-                            {nutritionists.length === 0 && (
+                            {suitableNutritionists.length === 0 && (
                                 <p className="text-[11px] text-slate-400 mt-1 italic">No nutritionists found in Firestore.</p>
                             )}
                         </div>

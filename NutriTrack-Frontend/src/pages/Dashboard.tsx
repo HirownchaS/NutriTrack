@@ -239,7 +239,7 @@ const Dashboard: React.FC = () => {
                 </div>
             )}
             <Routes>
-                <Route index element={<Navigate to="/dashboard/home" replace />} />
+                {/* <Route index element={<Navigate to="/dashboard/home" replace />} /> */}
                 <Route path="home" element={<HomeSection />} />
                 <Route path="upload" element={<FoodUploadSection />} />
                 <Route path="recommendation" element={<DietRecommendation />} />

@@ -1,25 +1,57 @@
 import { db, auth } from '../firebase/config';
 import { collection, query, where, getDocs, doc, getDoc, updateDoc, setDoc, serverTimestamp, limit, orderBy } from 'firebase/firestore';
 import { addNotification } from './firestore';
+import { goalsMatch } from './goalMatching';
 
 export const getAssignedUsers = async () => {
   const user = auth.currentUser;
   if (!user) throw new Error("Unauthenticated");
 
-  const snaps = await getDocs(query(collection(db, 'nutritionist_requests'), where('nutritionistId', '==', user.uid)));
-  const items = await Promise.all(snaps.docs.map(async (s) => {
+  const [nutritionistDoc, assignedSnap, requestSnap] = await Promise.all([
+    getDoc(doc(db, 'users', user.uid)),
+    getDocs(query(
+      collection(db, 'users'),
+      where('role', '==', 'user'),
+      where('nutritionistId', '==', user.uid)
+    )),
+    getDocs(query(
+      collection(db, 'nutritionist_requests'),
+      where('nutritionistId', '==', user.uid),
+      where('status', '==', 'pending')
+    )),
+  ]);
+
+  const specialization = nutritionistDoc.data()?.specialization;
+  const assigned = assignedSnap.docs
+    .filter(userDoc => {
+      const data = userDoc.data();
+      return typeof specialization === 'string'
+        && typeof data.fitnessGoal === 'string'
+        && goalsMatch(data.fitnessGoal, specialization);
+    })
+    .map(userDoc => {
+      const u = userDoc.data();
+      return {
+        id: userDoc.id, userId: userDoc.id, name: u.name || 'User', email: u.email || '',
+        age: u.age, weight: u.weight, healthCondition: u.healthCondition || 'None',
+        fitnessGoal: u.fitnessGoal || 'Wellness', status: 'accepted',
+        date: u.createdAt ? u.createdAt.toDate().toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+      };
+    });
+
+  const requests = await Promise.all(requestSnap.docs.map(async (s) => {
     const d = s.data();
     const uDoc = await getDoc(doc(db, 'users', d.userId));
     const u = uDoc.exists() ? uDoc.data() : {};
     return {
       id: s.id, userId: d.userId, name: u.name || 'User', email: u.email || '',
-      age: u.age, healthCondition: u.healthCondition || 'None',
-      fitnessGoal: u.fitnessGoal || 'Wellness', status: d.status || 'pending',
+      age: u.age, weight: u.weight, healthCondition: u.healthCondition || 'None',
+      fitnessGoal: u.fitnessGoal || 'Wellness', status: 'pending',
       date: d.createdAt ? d.createdAt.toDate().toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
     };
   }));
 
-  return { data: { assigned: items.filter(i => i.status === 'accepted'), requests: items.filter(i => i.status === 'pending') } };
+  return { data: { assigned, requests } };
 };
 
 export const handleUserRequest = async (requestId: string, status: 'accepted' | 'rejected') => {

@@ -49,6 +49,16 @@ const AdminAddNutritionist: React.FC = () => {
             setError('All fields are required.');
             return;
         }
+        const email = form.email.trim().toLowerCase();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            setError('Please enter a valid email address.');
+            return;
+        }
+        const localPart = email.split('@')[0];
+        if (!localPart.startsWith('dr')) {
+            setError("Nutritionist email must start with 'dr'.");
+            return;
+        }
         if (form.password.length < 6) {
             setError('Password must be at least 6 characters.');
             return;

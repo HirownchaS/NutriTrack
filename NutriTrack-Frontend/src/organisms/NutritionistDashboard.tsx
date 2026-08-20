@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card from '../atoms/Card';
 import { useAuth } from '../context/AuthContext';
+import { getAssignedUsers } from '../services/nutritionist';
 import { collection, query, where, getDocs, getDoc, doc, limit, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import {
@@ -197,21 +198,10 @@ const NutritionistDashboard: React.FC = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const assignedQ = query(
-                    collection(db, 'users'),
-                    where('nutritionistId', '==', user.uid)
-                );
-                const assignedSnap = await getDocs(assignedQ);
-                const assignedCount = assignedSnap.size;
-                const userIds = assignedSnap.docs.map((d) => d.id);
-
-                const pendingQ = query(
-                    collection(db, 'nutritionist_requests'),
-                    where('nutritionistId', '==', user.uid),
-                    where('status', '==', 'pending')
-                );
-                const pendingSnap = await getDocs(pendingQ);
-                const pendingCount = pendingSnap.size;
+                const assignedData = await getAssignedUsers();
+                const assignedCount = assignedData.data.assigned.length;
+                const userIds = assignedData.data.assigned.map((assignedUser) => assignedUser.userId);
+                const pendingCount = assignedData.data.requests.length;
 
                 let activePlansCount = 0;
                 if (userIds.length > 0) {

@@ -30,7 +30,7 @@ const Profile: React.FC = () => {
         dietaryPreference: 'none',
         allergies: '',
         activityLevel: 'moderate',
-        fitnessGoal: 'maintain weight',
+        fitnessGoal: 'lose weight',
         healthCondition: 'none',
     
     });
@@ -60,7 +60,7 @@ const Profile: React.FC = () => {
                         dietaryPreference: profileData.dietaryPreference || 'none',
                         allergies: profileData.allergies || '',
                         activityLevel: profileData.activityLevel || 'moderate',
-                        fitnessGoal: profileData.fitnessGoal || 'maintain weight',
+                        fitnessGoal: profileData.fitnessGoal,
                         healthCondition: profileData.healthCondition || 'none'
                     });
                 }

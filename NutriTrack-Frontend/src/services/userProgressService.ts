@@ -5,7 +5,7 @@ import {
 } from 'firebase/firestore';
 import { calculateDynamicCalories } from './tracking';
 
-// ─── Types 
+// Types 
 
 export interface UserProfile {
     id: string;
@@ -85,8 +85,7 @@ export interface UserProgressPayload {
     macroDistribution: MacroDistribution;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
+// Helpers 
 const parseFoodLogDoc = (d: any): FoodLogEntry => {
     const data = d.data();
     const ts: Date = data.createdAt?.toDate?.() ?? new Date();
@@ -108,7 +107,7 @@ const getDayLabel = (dateStr: string): string => {
     return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 };
 
-// ─── Core Fetchers ────────────────────────────────────────────────────────────
+// Core Fetchers
 
 /** Fetch the full user profile with goal defaults */
 export const fetchUserProfile = async (userId: string): Promise<UserProfile> => {
@@ -384,7 +383,7 @@ export const computeGoalAchievement = (
     };
 };
 
-// ─── Main Aggregator
+//Main Aggregator
 
 
 export const getUserProgressData = async (

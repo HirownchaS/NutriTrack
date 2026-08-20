@@ -7,6 +7,7 @@ import NutritionistCard from '../molecules/NutritionistCard';
 import { FiUsers, FiSearch, FiInfo } from 'react-icons/fi';
 import { Nutritionist } from '../types/nutrition';
 import { useNotification } from '../context/NotificationContext';
+import { goalsMatch } from '../services/goalMatching';
 
 
 
@@ -20,14 +21,6 @@ const RequestNutritionist: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [error, setError] = useState<string>('');
     const { success, warning, error: notifyError } = useNotification();
-
-    // Mapping for common fitness goal synonyms to improve matching
-    const GOAL_SYNONYMS: Record<string, string[]> = {
-        'lose weight': ['lose weight', 'weight loss', 'fat loss', 'slimming', 'reduction'],
-        'maintain': ['maintain', 'maintain weight', 'weight maintenance', 'balance', 'stabilize'],
-        'build muscle': ['build muscle', 'muscle gain', 'bulking', 'strength', 'hypertrophy'],
-        'general health': ['general health', 'wellness', 'lifestyle', 'healthy living', 'general nutrition', 'fitness']
-    };
 
     const fetchData = async () => {
         if (!user) return;
@@ -66,14 +59,7 @@ const RequestNutritionist: React.FC = () => {
                 // Flexible Filtering Logic
                 const filterExperts = (list: Nutritionist[], goal: string) => {
                     if (!goal) return list;
-                    const g = goal.toLowerCase().trim();
-                    const synonyms = GOAL_SYNONYMS[g] || [g];
-
-                    return list.filter(e => {
-                        const s = e.specialization.toLowerCase();
-                        // Match if specialization is exactly a synonym OR contains a synonym OR goal
-                        return synonyms.some(syn => s.includes(syn)) || s.includes(g) || g.includes(s);
-                    });
+                    return list.filter(e => goalsMatch(goal, e.specialization));
                 };
 
                 let matching = filterExperts(normalizedExperts, goalValue);

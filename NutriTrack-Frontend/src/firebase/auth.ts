@@ -25,7 +25,7 @@ import {
 import { auth, secondaryAuth, db } from './config';
 import { addNotification } from '../services/firestore';
 
-// ---- Types ----
+// Types 
 
 export interface RegisterData {
     name: string;
@@ -46,15 +46,12 @@ export interface UserRole {
     profileComplete: boolean;
     name: string;
     email: string;
+    // specialization?: string;
     collection: 'users' | 'nutritionists';
 }
 
-// ---- Auth Functions ----
+// Auth Functions 
 
-/**
- * Register a new user with Firebase Auth + create Firestore doc.
- * Only users register through the public form. Role is always "user".
- */
 export const registerUser = async ({ name, email, password }: RegisterData) => {
     const credential = await createUserWithEmailAndPassword(auth, email, password);
     const uid = credential.user.uid;
@@ -90,10 +87,7 @@ export const logoutUser = async () => {
     await signOut(auth);
 };
 
-/**
- * Detect user role by checking Firestore collections.
- * returns role info or null if not found.
- */
+
 export const getUserRole = async (uid: string): Promise<UserRole | null> => {
 
 
@@ -133,9 +127,8 @@ export const getUserRole = async (uid: string): Promise<UserRole | null> => {
     return null;
 };
 
-/**
- * Fetch the full user profile document from Firestore.
- */
+// Fetch the full user profile document from Firestore.
+ 
 export const getUserProfile = async (uid: string) => {
     const userDocRef = doc(db, 'users', uid);
     const userDoc = await getDoc(userDocRef);
@@ -145,10 +138,9 @@ export const getUserProfile = async (uid: string) => {
     return null;
 };
 
-/**
- * Save / update profile data in Firestore for a user.
- * Marks profileComplete = true.
- */
+// Save / update profile data in Firestore for a user.
+// Marks profileComplete = true.
+
 export const saveProfile = async (uid: string, profileData: Record<string, unknown>) => {
     await updateDoc(doc(db, 'users', uid), {
         ...profileData,
@@ -156,11 +148,8 @@ export const saveProfile = async (uid: string, profileData: Record<string, unkno
     });
 };
 
-/**
- * Admin creates a nutritionist account.
- * Uses the secondary auth instance so the admin session is not disrupted.
- * Saves directly to the 'users' collection.
- */
+// Admin creates a nutritionist account. Saves directly to the 'users' collection.
+ 
 export const createNutritionistAccount = async (
     data: NutritionistData,
     adminUid: string
@@ -191,9 +180,8 @@ export const createNutritionistAccount = async (
     return { uid, email: data.email };
 };
 
-/**
- * Fetch all users from Firestore 'users' collection.
- */
+// Fetch all users from Firestore 'users' collection.
+
 export const getUsers = async () => {
     try {
         const user = auth.currentUser;
@@ -211,30 +199,24 @@ export const getUsers = async () => {
     }
 };
 
-/**
- * Delete a user document from Firestore.
- */
+// Delete a user document from Firestore.
+ 
 export const deleteUserAccount = async (uid: string) => {
     await deleteDoc(doc(db, 'users', uid));
 };
 
-/**
- * Update a user's role in Firestore.
- */
+// Update a user's role in Firestore.
 export const updateUserRole = async (uid: string, role: string) => {
     await updateDoc(doc(db, 'users', uid), { role });
 };
 
-/**
- * Update arbitrary fields on a user document.
- */
+// Update arbitrary fields on a user document.
+ 
 export const updateUserDoc = async (uid: string, data: Record<string, unknown>) => {
     await updateDoc(doc(db, 'users', uid), data);
 };
 
-/**
- * Fetch all nutritionists from Firestore 'users' collection.
- */
+// Fetch all nutritionists from Firestore 'users' collection.
 export const getNutritionists = async () => {
     try {
         const user = auth.currentUser;
@@ -253,9 +235,8 @@ export const getNutritionists = async () => {
     }
 };
 
-/**
- * Send a nutritionist request.
- */
+// Send a nutritionist request.
+
 export const sendNutritionistRequest = async (userId: string, nutritionistId: string) => {
     try {
         const user = auth.currentUser;
@@ -308,9 +289,7 @@ export const sendNutritionistRequest = async (userId: string, nutritionistId: st
     }
 };
 
-/**
- * Listen to all nutritionist requests for a user in real-time.
- */
+// Listen to all nutritionist requests for a user in real-time.
 export const listenToUserNutritionistRequests = (userId: string, callback: (requests: any[]) => void) => {
     if (!userId) return () => {};
     
@@ -336,9 +315,8 @@ export const listenToUserNutritionistRequests = (userId: string, callback: (requ
     });
 };
 
-/**
- * Get the current nutritionist request for a user.
- */
+// Get the current nutritionist request for a user.
+ 
 export const getUserNutritionistRequest = async (userId: string) => {
     const requestsCol = collection(db, 'nutritionist_requests');
     const q = query(
@@ -357,9 +335,8 @@ export const getUserNutritionistRequest = async (userId: string) => {
     };
 };
 
-/**
- * Get ALL nutritionist requests for a user.
- */
+// Get ALL nutritionist requests for a user.
+
 export const getUserAllNutritionistRequests = async (userId: string) => {
     try {
         const user = auth.currentUser;
@@ -386,10 +363,8 @@ export const getUserAllNutritionistRequests = async (userId: string) => {
     }
 };
 
-/**
- * Send a password reset email via Firebase Auth.
- * Throws an error with a user-friendly message if the email is not registered.
- */
+//Send a password reset email via Firebase Auth. Throws an error with a user-friendly message if the email is not registered.
+
 export const sendPasswordReset = async (email: string): Promise<void> => {
     try {
         await sendPasswordResetEmail(auth, email);
@@ -404,10 +379,8 @@ export const sendPasswordReset = async (email: string): Promise<void> => {
     }
 };
 
-/**
- * Verify the password reset code (oobCode) from the URL.
- * Returns the email associated with the code if valid.
- */
+//Verify the password reset code (oobCode) from the URL.Returns the email associated with the code if valid.
+ 
 export const verifyResetCode = async (code: string): Promise<string> => {
     try {
         return await verifyPasswordResetCode(auth, code);
@@ -417,9 +390,8 @@ export const verifyResetCode = async (code: string): Promise<string> => {
     }
 };
 
-/**
- * Confirm the password reset with the new password and code.
- */
+//Confirm the password reset with the new password and code.
+ 
 export const resetPassword = async (code: string, newPassword: string): Promise<void> => {
     try {
         await confirmPasswordReset(auth, code, newPassword);

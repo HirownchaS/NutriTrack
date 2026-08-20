@@ -25,7 +25,7 @@ const ProfileSetup: React.FC = () => {
         height: '',
         gender: 'male',
         healthCondition: 'none',
-        fitnessGoal: 'maintain',
+        fitnessGoal: 'lose weight',
         activityLevel: 'moderate',
     });
     const [error, setError] = useState<string>('');

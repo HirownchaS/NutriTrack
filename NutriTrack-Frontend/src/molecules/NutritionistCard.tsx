@@ -45,7 +45,7 @@ const NutritionistCard: React.FC<NutritionistCardProps> = ({
                         <span className="text-sm">
                             {{
                                 'lose weight': 'Weight Loss',
-                                'maintain weight': 'Maintain Weight',
+                                'maintain': 'Maintain Weight',
                                 'build muscle': 'Muscle Building',
                                 'general health': 'General Health'
                             }[nutritionist.specialization.toLowerCase()] || nutritionist.specialization}

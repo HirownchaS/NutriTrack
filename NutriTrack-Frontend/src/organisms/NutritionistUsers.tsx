@@ -39,7 +39,6 @@ const NutritionistUsers: React.FC = () => {
 
     useEffect(() => {
         let unsubRequests = () => {};
-        let unsubUsers = () => {};
 
         const setupRealtimeSync = async () => {
             if (!user) return;
@@ -74,35 +73,9 @@ const NutritionistUsers: React.FC = () => {
                     console.error("Requests sync error:", error);
                 });
 
-                // 2. Listen directly to users collection for assigned users (compliant with Firestore rules)
-                const qUsers = query(
-                    collection(db, "users"),
-                    where("nutritionistId", "==", user.uid)
-                );
-
-                unsubUsers = onSnapshot(qUsers, (snapshot) => {
-                    const assigned = snapshot.docs.map(docSnap => {
-                        const uData = docSnap.data();
-                        return {
-                            id: docSnap.id,
-                            userId: docSnap.id,
-                            name: uData.name || 'Unknown User',
-                            email: uData.email || 'No email',
-                            age: uData.age || null,
-                            weight: uData.weight || null,
-                            healthCondition: uData.healthCondition || 'None specified',
-                            fitnessGoal: uData.fitnessGoal || 'None specified',
-                            status: 'accepted',
-                            date: uData.createdAt?.toDate ? uData.createdAt.toDate().toLocaleDateString() : 'Just now'
-                        };
-                    });
-
-                    setAssignedUsers(assigned);
-                    setLoading(false);
-                }, (error) => {
-                    console.error("Users sync error:", error);
-                    setLoading(false);
-                });
+                const result = await getAssignedUsers();
+                setAssignedUsers(result.data.assigned);
+                setLoading(false);
 
             } catch (err) {
                 console.error("Setup listener error", err);
@@ -113,7 +86,6 @@ const NutritionistUsers: React.FC = () => {
         setupRealtimeSync();
         return () => {
             unsubRequests();
-            unsubUsers();
         };
     }, [user]);
 
@@ -128,6 +100,8 @@ const NutritionistUsers: React.FC = () => {
         setProcessingId(id);
         try {
             await handleUserRequest(id, status);
+            const result = await getAssignedUsers();
+            setAssignedUsers(result.data.assigned);
             setToast({
                 message: status === 'accepted' ? '✅ Request accepted!' : '❌ Request rejected.',
                 type: status === 'accepted' ? 'success' : 'error'
