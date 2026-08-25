@@ -1,1 +1,5 @@
-export { addNotification, subscribeToNotifications, markNotificationsAsRead } from './firestore';
+export {
+  addNotification,
+  subscribeToNotifications,
+  markNotificationsAsRead,
+} from "./firestore";

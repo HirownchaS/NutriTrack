@@ -334,14 +334,14 @@ const AdminAnalytics: React.FC = () => {
 
     // 7. Fitness Goal Distribution
     const fitnessGoalData = useMemo(() => {
-        const counts = { 'Weight Loss': 0, 'Weight Gain': 0, 'Muscle Building': 0, 'General Health': 0 };
+        const counts = { 'Weight Loss': 0, 'Weight maintain': 0, 'Muscle Building': 0, 'General Health': 0 };
         users.forEach(u => {
             if (u.role !== 'user') return;
             const goal = (u.fitnessGoal || '').toLowerCase();
             if (goal.includes('lose') || goal.includes('slimming') || goal.includes('deficit')) {
                 counts['Weight Loss']++;
-            } else if (goal.includes('gain') || goal.includes('bulking')) {
-                counts['Weight Gain']++;
+            } else if (goal.includes('maintain') || goal.includes('maintain weight')) {
+                counts['Weight maintain']++;
             } else if (goal.includes('muscle') || goal.includes('build') || goal.includes('strength')) {
                 counts['Muscle Building']++;
             } else {

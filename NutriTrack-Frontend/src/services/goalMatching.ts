@@ -1,6 +1,6 @@
 export const GOAL_SYNONYMS: Record<string, string[]> = {
   'lose weight': ['lose weight', 'weight loss'],
-  maintain: ['maintain', 'maintain weight'],
+  'maintain weight': ['maintain', 'maintain weight'],
   'build muscle': ['build muscle', 'muscle building'],
   'general health': ['general health', 'wellness', 'general nutrition'],
 };

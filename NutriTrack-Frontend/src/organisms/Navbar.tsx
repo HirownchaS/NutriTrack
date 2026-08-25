@@ -133,7 +133,7 @@ const Navbar: React.FC = () => {
                         {user.name}
                       </span>
                       <span className="text-xs font-medium text-emerald-600 capitalize">
-                         {user.role}
+                        {user.role}
                       </span>
                     </div>
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white font-bold text-lg border-2 border-white ring-1 ring-emerald-100">

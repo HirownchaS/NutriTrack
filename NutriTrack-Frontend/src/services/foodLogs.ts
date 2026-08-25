@@ -1,9 +1,9 @@
-import { trackMealToFirestore, getTodayFoodLogs } from './firestore';
-import { auth } from '../firebase/config';
+import { trackMealToFirestore, getTodayFoodLogs } from "./firestore";
+import { auth } from "../firebase/config";
 
 export const addManualFoodLog = async (data: any) => {
   const user = auth.currentUser;
-  if (!user) throw new Error('Unauthenticated');
+  if (!user) throw new Error("Unauthenticated");
 
   await trackMealToFirestore(
     user.uid,
@@ -13,10 +13,10 @@ export const addManualFoodLog = async (data: any) => {
       kcal: data.calories,
       protein: data.protein,
       carbs: data.carbs,
-      fats: data.fats
+      fats: data.fats,
     },
-    'manual',
-    data.portion
+    "manual",
+    data.portion,
   );
   return { success: true };
 };

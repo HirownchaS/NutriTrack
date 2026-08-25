@@ -1,25 +1,25 @@
-import api from './api';
-import { db } from '../firebase/config';
-import { setDoc, doc, serverTimestamp, getDoc } from 'firebase/firestore';
+import api from "./api";
+import { db } from "../firebase/config";
+import { setDoc, doc, serverTimestamp, getDoc } from "firebase/firestore";
 
 export const getDietRecommendation = async () => {
-  const user = (await import('../firebase/config')).auth.currentUser;
+  const user = (await import("../firebase/config")).auth.currentUser;
   if (!user) throw new Error("Unauthenticated");
 
-  const uDoc = await getDoc(doc(db, 'users', user.uid));
+  const uDoc = await getDoc(doc(db, "users", user.uid));
   const u = uDoc.data() || {};
 
   try {
-    const res = await api.post('/recommend-diet', {
+    const res = await api.post("/recommend-diet", {
       age: Number(u.age) || 30,
-      gender: u.gender || 'male',
+      gender: u.gender || "male",
       weight: Number(u.weight) || 70,
       height: Number(u.height) || 170,
-      activityLevel: u.activityLevel || 'moderate',
-      fitnessGoal: u.fitnessGoal || 'maintain',
-      healthCondition: u.healthCondition || 'none',
-      allergies: u.allergies || 'none',
-      dietType: u.dietaryPreference || 'none'
+      activityLevel: u.activityLevel || "moderate",
+      fitnessGoal: u.fitnessGoal || "maintain",
+      healthCondition: u.healthCondition || "none",
+      allergies: u.allergies || "none",
+      dietType: u.dietaryPreference || "none",
     });
 
     const data = res.data;
@@ -33,25 +33,28 @@ export const getDietRecommendation = async () => {
             p: Math.round(item.protein_g),
             c: Math.round(item.carbs_g),
             f: Math.round(item.fat_g),
-            desc: `Selected for its high nutritional quality and compliance with your fitness profile.`
+            desc: `Selected for its high nutritional quality and compliance with your fitness profile.`,
           });
         });
       });
     }
 
     const finalData = {
-      goal: u.fitnessGoal || 'Wellness',
+      goal: u.fitnessGoal || "Wellness",
       calories: u.dailyCalorieGoal || data.calories,
       protein: u.proteinGoal || data.macros?.protein,
       carbs: u.carbsGoal || data.macros?.carbs,
       fats: u.fatsGoal || data.macros?.fats,
       mealPlan: data.explanation,
       suggestions: suggestions,
-      ...data
+      ...data,
     };
 
-    await setDoc(doc(db, 'diet_recommendations', user.uid), {
-      userId: user.uid, ...finalData, status: 'approved', createdAt: serverTimestamp()
+    await setDoc(doc(db, "diet_recommendations", user.uid), {
+      userId: user.uid,
+      ...finalData,
+      status: "approved",
+      createdAt: serverTimestamp(),
     });
 
     return finalData;
@@ -62,8 +65,12 @@ export const getDietRecommendation = async () => {
 };
 
 export const createDietPlan = async (userId: string, data: any) => {
-  const user = (await import('../firebase/config')).auth.currentUser;
+  const user = (await import("../firebase/config")).auth.currentUser;
   if (!user) throw new Error("Unauthenticated");
-  await setDoc(doc(db, 'diet_recommendations', userId), { ...data, userId, nutritionistId: user.uid, updatedAt: serverTimestamp() }, { merge: true });
+  await setDoc(
+    doc(db, "diet_recommendations", userId),
+    { ...data, userId, nutritionistId: user.uid, updatedAt: serverTimestamp() },
+    { merge: true },
+  );
   return { success: true };
 };
