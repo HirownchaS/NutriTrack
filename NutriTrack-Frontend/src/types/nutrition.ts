@@ -130,7 +130,7 @@ export interface MealDocument {
     createdAt: unknown; // Firestore Timestamp
 }
 
-/** Raw API response from POST /predict */
+//Raw API response from POST /predict 
 export interface PredictResponse {
     detections: Detection[];
     nutrition: NutritionSummaryData;

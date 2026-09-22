@@ -124,7 +124,7 @@ const getDayLabel = (dateStr: string): string => {
 
 // Core Fetchers
 
-/** Fetch the full user profile with goal defaults */
+//Fetch the full user profile with goal defaults 
 export const fetchUserProfile = async (
   userId: string,
 ): Promise<UserProfile> => {
@@ -150,7 +150,7 @@ export const fetchUserProfile = async (
   };
 };
 
-/** Fetch last N food logs for a user */
+//Fetch last N food logs for a user 
 export const fetchRecentFoodLogs = async (
   userId: string,
   count: number = 10,
@@ -180,7 +180,7 @@ export const fetchRecentFoodLogs = async (
     .slice(0, count);
 };
 
-/** Fetch food logs for a date range (for calorie trend) */
+//Fetch food logs for a date range (for calorie trend) */
 export const fetchFoodLogsInRange = async (
   userId: string,
   startDate: Date,
@@ -211,7 +211,7 @@ export const fetchFoodLogsInRange = async (
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 };
 
-/** Fetch weight history from weight_logs or fall back to user profile */
+//Fetch weight history from weight_logs or fall back to user profile
 export const fetchWeightHistory = async (
   userId: string,
 ): Promise<WeightRecord[]> => {
@@ -247,7 +247,7 @@ export const fetchWeightHistory = async (
   return [];
 };
 
-/** Compute calorie compliance from recent logs against daily goal */
+//Compute calorie compliance from recent logs against daily goal
 export const computeCalorieCompliance = (
   logs: FoodLogEntry[],
   dailyGoal: number,
@@ -310,7 +310,7 @@ export const computeCalorieCompliance = (
   };
 };
 
-/** Determine weight trend from weight history */
+//Determine weight trend from weight history
 export const computeWeightTrend = (history: WeightRecord[]): WeightTrend => {
   if (history.length < 2) return "insufficient-data";
   const first = history[0].weight;
@@ -320,7 +320,7 @@ export const computeWeightTrend = (history: WeightRecord[]): WeightTrend => {
   return diff > 0 ? "gain" : "loss";
 };
 
-/** Build daily calorie trend data for the last N days */
+//Build daily calorie trend data for the last N days
 export const buildCalorieTrend = (
   logs: FoodLogEntry[],
   days: number = 14,
@@ -343,7 +343,7 @@ export const buildCalorieTrend = (
   return records;
 };
 
-/** Compute macro distribution totals from logs */
+//Compute macro distribution totals from logs
 export const computeMacroDistribution = (
   logs: FoodLogEntry[],
 ): MacroDistribution => {
@@ -362,7 +362,7 @@ export const computeMacroDistribution = (
   };
 };
 
-/** Compute goal achievement status considering multiple factors */
+//Compute goal achievement status considering multiple factors 
 export const computeGoalAchievement = (
   compliance: ComplianceResult,
   macros: MacroDistribution,

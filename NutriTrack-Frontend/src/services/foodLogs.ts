@@ -22,5 +22,5 @@ export const addManualFoodLog = async (data: any) => {
 };
 
 export const getFoodLogs = async () => {
-  return null as any; // kept for compatibility; use admin.getUserFoodLogs or other helpers as needed
+  return null as any; 
 };

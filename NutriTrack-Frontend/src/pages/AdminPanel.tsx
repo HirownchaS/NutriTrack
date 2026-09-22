@@ -7,7 +7,7 @@ import AdminNutritionistManagement from "../organisms/AdminNutritionistManagemen
 import AdminAddNutritionist from "../organisms/AdminAddNutritionist";
 // import AdminFoodDatabase from '../organisms/AdminFoodDatabase';
 import AdminAIControl from "../organisms/AdminAIControl";
-import AdminLogMonitor from "../organisms/AdminLogMonitor";
+import AdminTrackingReports from "../organisms/AdminTrackingReports";
 import Profile from "./Profile";
 import Card from "../atoms/Card";
 import Button from "../atoms/Button";
@@ -25,9 +25,8 @@ const AdminPanel: React.FC = () => {
         <Route path="add-nutritionist" element={<AdminAddNutritionist />} />
         <Route path="ai-control" element={<AdminAIControl />} />
 
-        <Route path="tracking-reports" element={<AdminLogMonitor />} />
+        <Route path="tracking-reports" element={<AdminTrackingReports />} />
 
-        <Route path="profile" element={<Profile />} />
 
         <Route path="*" element={<Navigate to="analytics" replace />} />
       </Routes>

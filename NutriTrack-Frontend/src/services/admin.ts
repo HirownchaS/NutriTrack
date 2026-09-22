@@ -14,6 +14,7 @@ import {
   startAfter,
   serverTimestamp,
 } from "firebase/firestore";
+import { log } from "firebase/firestore/pipelines";
 
 export const getAdminStats = async () => {
   const users = await getDocs(collection(db, "users"));
